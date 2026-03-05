@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Snake Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="score-section">
+                <span class="trophy">🏆</span>
+                <span class="score-value" id="score">0</span>
+                <span class="time-label">⏱️</span>
+                <span class="time-value" id="time">0s</span>
+                <div style="margin-left: 20px; display:flex; gap:10px; align-items:center;">
+                    <button class="btn" id="pauseBtn" onclick="togglePause()">⏸️ PAUSE</button>
+                    <button class="btn btn-secondary" onclick="goHome()">🏠 HOME</button>
+                    <button class="btn" id="aiBtn" onclick="toggleAI()">🤖 AUTO: OFF</button>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" class="game-canvas"></canvas>
+
+        <div class="game-over-screen" id="gameOverScreen" style="display: none;">
+            <div class="game-over-content">
+                <h2>GAME OVER</h2>
+                <div class="final-stats">
+                    <p><span class="trophy">🏆</span> Score: <span id="finalScore">0</span></p>
+                    <p><span class="clock">⏱️</span> Time: <span id="finalTime">0</span>s</p>
+                </div>
+
+                <div class="submit-score" style="display:none; gap:8px; justify-content:center; margin-top:10px;">
+                    <input id="playerName" placeholder="Your name" maxlength="20" style="padding:8px; border-radius:6px; border:1px solid #ccc;" />
+                    <button class="btn" id="submitScoreBtn" onclick="submitScore()" disabled>🏁 Submit Score</button>
+                </div>
+
+                <div class="leaderboard game-leaderboard" style="margin-top:20px; text-align:left;">
+                    <h3>Leaderboard</h3>
+                    <ol id="leaderboardListGame"></ol>
+                </div>
+
+                <div class="game-over-buttons" style="margin-top:18px;">
+                    <button class="btn" onclick="restartGame()">🔄 RESTART</button>
+                    <button class="btn btn-secondary" onclick="goHome()">🏠 HOME</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-info">
+            <p>Use <strong>WASD</strong> or <strong>Arrow Keys</strong> to control the snake</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

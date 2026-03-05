@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Snake Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="main-menu">
+            <div class="menu-content">
+                <h1 class="title">🐍 AI SNAKE</h1>
+                <div class="menu-buttons">
+                    <button class="btn btn-large" onclick="startGame()">▶️ START GAME</button>
+                    <button class="btn btn-large" onclick="openSettings()">⚙️ SETTINGS</button>
+                </div>
+
+                <div id="leaderboardMenu" class="leaderboard-menu" style="margin-top:20px;">
+                    <h3>Leaderboard</h3>
+                    <ol id="leaderboardList"></ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-modal" id="settingsModal" style="display: none;">
+            <div class="settings-content">
+                <h2>SETTINGS</h2>
+                
+                <div class="setting-group">
+                    <label for="mapSize">Map Size:</label>
+                    <select id="mapSize">
+                        <option value="small">Small (20x20)</option>
+                        <option value="medium">Medium (40x40)</option>
+                        <option value="large">Large (80x80)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="snakeColor">Snake Color:</label>
+                    <select id="snakeColor">
+                        <option value="blue" selected>Blue</option>
+                        <option value="red">Red</option>
+                        <option value="green">Green</option>
+                        <option value="yellow">Yellow</option>
+                        <option value="purple">Purple</option>
+                        <option value="rainbow">Rainbow</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="speed">Speed:</label>
+                    <select id="speed">
+                        <option value="slow">Slow (3 blocks/sec)</option>
+                        <option value="medium">Medium (5 blocks/sec)</option>
+                        <option value="fast">Fast (10 blocks/sec)</option>
+                    </select>
+                </div>
+
+                <div class="setting-group checkbox">
+                    <input type="checkbox" id="randomControls">
+                    <label for="randomControls">Random Controls (Hard Mode)</label>
+                </div>
+
+                <div class="setting-group checkbox">
+                    <input type="checkbox" id="invisibleSnake">
+                    <label for="invisibleSnake">Invisible Snake (Hard Mode)</label>
+                </div>
+
+                <div class="setting-group">
+                    <label for="applesCount">Apples Count:</label>
+                    <select id="applesCount">
+                        <option value="1">1</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="background">Background:</label>
+                    <select id="background">
+                        <option value="white">White</option>
+                        <option value="#e8f5e9">Light Green</option>
+                        <option value="#f3e5f5">Light Purple</option>
+                        <option value="#f5f5f5">Light Gray</option>
+                    </select>
+                </div>
+
+                <div class="settings-buttons">
+                    <button class="btn" onclick="saveSettings()">SAVE</button>
+                    <button class="btn btn-secondary" onclick="closeSettings()">BACK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startGame() {
+            window.location.href = '/game';
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            loadSettings();
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function loadSettings() {
+            fetch('/api/settings')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('mapSize').value = data.map_size;
+                    document.getElementById('snakeColor').value = data.snake_color;
+                    document.getElementById('speed').value = data.speed;
+                    document.getElementById('randomControls').checked = data.random_controls;
+                    document.getElementById('invisibleSnake').checked = data.invisible_snake || false;
+                    document.getElementById('applesCount').value = data.apples_count || 1;
+                    document.getElementById('background').value = data.background || 'white';
+                })
+                .finally(() => {
+                    // Fetch and display server leaderboard
+                    fetch('/api/leaderboard')
+                        .then(r => r.json())
+                        .then(list => {
+                            const container = document.getElementById('leaderboardList');
+                            container.innerHTML = '';
+                            list.forEach(entry => {
+                                const li = document.createElement('li');
+                                li.textContent = `${entry.name} — ${entry.score} (${entry.time}s)`;
+                                container.appendChild(li);
+                            });
+                        })
+                        .catch(err => console.error('Error loading leaderboard', err));
+                });
+        }
+
+        function saveSettings() {
+            const settings = {
+                map_size: document.getElementById('mapSize').value,
+                snake_color: document.getElementById('snakeColor').value,
+                speed: document.getElementById('speed').value,
+                random_controls: document.getElementById('randomControls').checked,
+                invisible_snake: document.getElementById('invisibleSnake').checked,
+                apples_count: parseInt(document.getElementById('applesCount').value, 10),
+                background: document.getElementById('background').value,
+            };
+
+            fetch('/api/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(settings),
+            })
+            .then(response => response.json())
+            .then(() => {
+                closeSettings();
+                alert('Settings saved!');
+            });
+        }
+
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>
