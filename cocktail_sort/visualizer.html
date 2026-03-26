@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail Sort Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .visualization {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 300px;
+        }
+
+        .bars-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
+            height: 250px;
+            margin-bottom: 20px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #667eea;
+            border-radius: 3px;
+            transition: all 0.1s;
+            position: relative;
+            min-width: 20px;
+        }
+
+        .bar.comparing {
+            background: #f6ad55;
+        }
+
+        .bar.swapped {
+            background: #f56565;
+        }
+
+        .bar.sorted {
+            background: #48bb78;
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #333;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .info-panel {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .array-input-desc {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .speed-value {
+            min-width: 80px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .bars-container {
+                height: 200px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🍹 Cocktail Sort Visualizer</h1>
+        <p class="subtitle">Watch the Cocktail Sort algorithm in action!</p>
+
+        <div class="info-panel">
+            <div class="info-title">ℹ️ About Cocktail Sort</div>
+            <div class="info-text">
+                Cocktail Sort (Shaker Sort) is a variation of Bubble Sort that sorts in both directions.
+                It compares adjacent elements from left to right, then right to left, repeating until sorted.
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="arrayInput">Array (comma or space separated):</label>
+                <input
+                    type="text"
+                    id="arrayInput"
+                    placeholder="e.g., 5 3 8 4 2 7 1 6"
+                    value="5 3 8 4 2 7 1 6"
+                />
+                <div class="array-input-desc">Max 50 elements, values: 1-100</div>
+            </div>
+
+            <div class="control-group">
+                <label for="arraySize">Or generate random array:</label>
+                <input type="number" id="arraySize" min="5" max="50" value="15" />
+            </div>
+
+            <div class="control-group speed-control">
+                <label for="speed">Sort Speed:</label>
+                <input type="range" id="speed" min="10" max="500" value="100" />
+                <span class="speed-value"><span id="speedValue">100</span>ms</span>
+            </div>
+
+            <div class="button-group" style="grid-column: 1 / -1;">
+                <button class="btn-primary" onclick="generateRandom()">
+                    🎲 Random Array
+                </button>
+                <button class="btn-secondary" onclick="startSort()" id="startBtn">
+                    ▶️ Sort
+                </button>
+                <button class="btn-danger" onclick="resetSort()">
+                    🔄 Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <div id="barsContainer" class="bars-container"></div>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Comparisons</div>
+                    <div class="stat-value" id="comparisons">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Swaps</div>
+                    <div class="stat-value" id="swaps">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Time (ms)</div>
+                    <div class="stat-value" id="time">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Status</div>
+                    <div class="stat-value" id="status" style="font-size: 1.2em;">Ready</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-title">📊 Complexity</div>
+            <div class="info-text">
+                <strong>Time:</strong> Best O(n), Average O(n²), Worst O(n²)<br>
+                <strong>Space:</strong> O(1) - In-place sorting<br>
+                <strong>Stable:</strong> Yes - Equal elements maintain relative order
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let array = [5, 3, 8, 4, 2, 7, 1, 6];
+        let sorting = false;
+        let comparisons = 0;
+        let swapsCount = 0;
+        let startTime = 0;
+
+        function updateSpeed() {
+            const speed = document.getElementById('speed').value;
+            document.getElementById('speedValue').textContent = speed;
+        }
+
+        function parseArray() {
+            const input = document.getElementById('arrayInput').value.trim();
+            if (!input) return false;
+
+            const arr = input.split(/[\s,]+/).map(x => parseInt(x)).filter(x => !isNaN(x));
+            
+            if (arr.length === 0 || arr.length > 50) {
+                alert('Please enter 1-50 numbers');
+                return false;
+            }
+
+            if (arr.some(x => x < 1 || x > 100)) {
+                alert('All numbers must be between 1 and 100');
+                return false;
+            }
+
+            array = arr;
+            return true;
+        }
+
+        function generateRandom() {
+            const size = parseInt(document.getElementById('arraySize').value) || 15;
+            array = Array.from({ length: size }, () => Math.floor(Math.random() * 100) + 1);
+            document.getElementById('arrayInput').value = array.join(', ');
+            resetSort();
+        }
+
+        function renderBars(highlighted = {}) {
+            const container = document.getElementById('barsContainer');
+            container.innerHTML = '';
+            const maxVal = Math.max(...array, 1);
+
+            array.forEach((val, idx) => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = (val / maxVal * 100) + '%';
+
+                if (highlighted.sorted && highlighted.sorted.includes(idx)) {
+                    bar.classList.add('sorted');
+                } else if (highlighted.comparing && highlighted.comparing.includes(idx)) {
+                    bar.classList.add('comparing');
+                } else if (highlighted.swapped && highlighted.swapped.includes(idx)) {
+                    bar.classList.add('swapped');
+                }
+
+                container.appendChild(bar);
+            });
+        }
+
+        async function cocktailSort() {
+            let n = array.length;
+            let start = 0;
+            let end = n - 1;
+
+            while (start < end && sorting) {
+                // Forward pass
+                for (let i = start; i < end; i++) {
+                    if (!sorting) break;
+
+                    renderBars({ comparing: [i, i + 1] });
+                    await sleep(parseInt(document.getElementById('speed').value));
+                    comparisons++;
+                    document.getElementById('comparisons').textContent = comparisons;
+
+                    if (array[i] > array[i + 1]) {
+                        [array[i], array[i + 1]] = [array[i + 1], array[i]];
+                        swapsCount++;
+                        document.getElementById('swaps').textContent = swapsCount;
+                        renderBars({ swapped: [i, i + 1] });
+                        await sleep(parseInt(document.getElementById('speed').value));
+                    }
+                }
+
+                if (!sorting) break;
+                end--;
+
+                // Backward pass
+                for (let i = end; i > start; i--) {
+                    if (!sorting) break;
+
+                    renderBars({ comparing: [i - 1, i] });
+                    await sleep(parseInt(document.getElementById('speed').value));
+                    comparisons++;
+                    document.getElementById('comparisons').textContent = comparisons;
+
+                    if (array[i - 1] > array[i]) {
+                        [array[i - 1], array[i]] = [array[i], array[i - 1]];
+                        swapsCount++;
+                        document.getElementById('swaps').textContent = swapsCount;
+                        renderBars({ swapped: [i - 1, i] });
+                        await sleep(parseInt(document.getElementById('speed').value));
+                    }
+                }
+
+                if (!sorting) break;
+                start++;
+            }
+
+            if (sorting) {
+                const sorted = Array.from({ length: array.length }, (_, i) => i);
+                renderBars({ sorted });
+                document.getElementById('status').textContent = '✅ Sorted!';
+            } else {
+                document.getElementById('status').textContent = '⏸️ Paused';
+            }
+
+            sorting = false;
+            document.getElementById('startBtn').textContent = '▶️ Sort';
+            updateTime();
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateTime() {
+            const elapsed = Date.now() - startTime;
+            document.getElementById('time').textContent = elapsed;
+        }
+
+        function startSort() {
+            if (sorting) {
+                sorting = false;
+                document.getElementById('startBtn').textContent = '▶️ Resume';
+                return;
+            }
+
+            if (parseArray()) {
+                sorting = true;
+                comparisons = 0;
+                swapsCount = 0;
+                startTime = Date.now();
+                document.getElementById('comparisons').textContent = '0';
+                document.getElementById('swaps').textContent = '0';
+                document.getElementById('status').textContent = '⏳ Sorting...';
+                document.getElementById('startBtn').textContent = '⏸️ Pause';
+                renderBars();
+                cocktailSort();
+            }
+        }
+
+        function resetSort() {
+            sorting = false;
+            if (parseArray()) {
+                comparisons = 0;
+                swapsCount = 0;
+                document.getElementById('comparisons').textContent = '0';
+                document.getElementById('swaps').textContent = '0';
+                document.getElementById('time').textContent = '0';
+                document.getElementById('status').textContent = 'Ready';
+                document.getElementById('startBtn').textContent = '▶️ Sort';
+                renderBars();
+            }
+        }
+
+        // Initialize
+        document.getElementById('speed').addEventListener('input', updateSpeed);
+        renderBars();
+    </script>
+</body>
+</html>
